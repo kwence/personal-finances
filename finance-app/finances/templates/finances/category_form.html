@@ -1,0 +1,30 @@
+{% extends "finances/base.html" %}
+{% load form_tags %}
+
+{% block title %}{% if category %}Edit category{% else %}New category{% endif %}{% endblock %}
+{% block page_title %}{% if category %}Edit category{% else %}New category{% endif %}{% endblock %}
+{% block page_subtitle %}Give your money a label and a colour{% endblock %}
+
+{% block page_content %}
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card panel">
+        <div class="panel-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3"><label class="form-label">Name *</label>{{ form.name|bootstrap_field }}</div>
+            <div class="mb-3"><label class="form-label">Type *</label>{{ form.type|bootstrap_field }}</div>
+            <div class="row">
+              <div class="col-4 mb-3"><label class="form-label">Colour</label>{{ form.color|bootstrap_field }}</div>
+              <div class="col-8 mb-4"><label class="form-label">Icon</label>{{ form.icon|bootstrap_field }}</div>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-green"><i class="bi bi-check2 me-1"></i> Save category</button>
+              <a href="{% url 'categories' %}" class="btn btn-light-green">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

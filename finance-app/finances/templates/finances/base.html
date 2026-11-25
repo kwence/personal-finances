@@ -1,0 +1,156 @@
+{% load static form_tags %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="FinanceFam - a simple, calm place to manage your personal finances.">
+  <link rel="icon" href="{% static 'app/favicon.svg' %}" type="image/svg+xml">
+  <title>{% block title %}Dashboard{% endblock %} · FinanceFam</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}">
+  <link rel="stylesheet" href="{% static 'app/css/theme.css' %}">
+</head>
+<body class="{% if not user.is_authenticated %}auth-body{% endif %}">
+{% if user.is_authenticated %}
+  {% with nav_name=request.resolver_match.url_name %}
+  <div class="app-shell">
+    <aside class="sidebar d-none d-lg-flex">
+      <a href="{% url 'dashboard' %}" class="brand">
+        <span class="brand-mark"><i class="bi bi-leaf"></i></span>
+        <span class="brand-text">FinanceFam<small>PERSONAL FINANCE</small></span>
+      </a>
+
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav class="sidebar-nav">
+        <a href="{% url 'dashboard' %}" class="nav-link {% if nav_name == 'dashboard' %}active{% endif %}">
+          <i class="bi bi-grid-1x2"></i><span>Dashboard</span>
+        </a>
+        <a href="{% url 'transactions' %}" class="nav-link {% if 'transaction' in nav_name %}active{% endif %}">
+          <i class="bi bi-arrow-left-right"></i><span>Transactions</span>
+        </a>
+        <a href="{% url 'categories' %}" class="nav-link {% if 'categor' in nav_name %}active{% endif %}">
+          <i class="bi bi-tags"></i><span>Categories</span>
+        </a>
+        <a href="{% url 'budgets' %}" class="nav-link {% if 'budget' in nav_name %}active{% endif %}">
+          <i class="bi bi-pie-chart"></i><span>Budgets</span>
+        </a>
+        <a href="{% url 'goals' %}" class="nav-link {% if 'goal' in nav_name %}active{% endif %}">
+          <i class="bi bi-bullseye"></i><span>Savings goals</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-tip">
+        <i class="bi bi-lightbulb"></i>
+        <p><strong>Little steps, big change.</strong><br>Log every purchase to see where your money goes.</p>
+      </div>
+
+      <div class="sidebar-user mt-auto">
+        <span class="avatar">{{ user.username|slice:":1"|upper }}</span>
+        <span class="user-meta"><strong>{{ user.username }}</strong><small>{{ user.email|truncatechars:22 }}</small></span>
+        <form action="{% url 'logout' %}" method="post" class="ms-auto">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-icon" title="Sign out" aria-label="Sign out"><i class="bi bi-box-arrow-right"></i></button>
+        </form>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <button class="btn btn-icon d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-label="Open menu">
+          <i class="bi bi-list fs-4"></i>
+        </button>
+        <div class="me-auto">
+          <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+          <div class="page-subtitle">{% block page_subtitle %}A clear view of your money{% endblock %}</div>
+        </div>
+        <form method="post" action="{% url 'currency_change' %}" class="currency-picker me-1">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <label class="visually-hidden" for="currencySelect">Currency</label>
+          <select id="currencySelect" name="currency" class="form-select form-select-sm" onchange="this.form.submit()" aria-label="Currency">
+            {% for choice in currency_choices %}
+              <option value="{{ choice.code }}" {% if choice.code == currency %}selected{% endif %}>{{ choice.symbol }} {{ choice.code }}</option>
+            {% endfor %}
+          </select>
+        </form>
+        {% block page_actions %}{% endblock %}
+      </header>
+
+      <main class="content">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|alert_class }} alert-dismissible fade show soft-alert" role="alert">
+              <i class="bi bi-check-circle me-2"></i>{{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+        {% block page_content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <div class="offcanvas offcanvas-start mobile-nav" tabindex="-1" id="mobileNav" aria-labelledby="mobileNavLabel">
+    <div class="offcanvas-header">
+      <a href="{% url 'dashboard' %}" class="brand">
+        <span class="brand-mark"><i class="bi bi-leaf"></i></span>
+        <span class="brand-text">FinanceFam</span>
+      </a>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <nav class="sidebar-nav">
+        <a href="{% url 'dashboard' %}" class="nav-link {% if nav_name == 'dashboard' %}active{% endif %}"><i class="bi bi-grid-1x2"></i><span>Dashboard</span></a>
+        <a href="{% url 'transactions' %}" class="nav-link {% if 'transaction' in nav_name %}active{% endif %}"><i class="bi bi-arrow-left-right"></i><span>Transactions</span></a>
+        <a href="{% url 'categories' %}" class="nav-link {% if 'categor' in nav_name %}active{% endif %}"><i class="bi bi-tags"></i><span>Categories</span></a>
+        <a href="{% url 'budgets' %}" class="nav-link {% if 'budget' in nav_name %}active{% endif %}"><i class="bi bi-pie-chart"></i><span>Budgets</span></a>
+        <a href="{% url 'goals' %}" class="nav-link {% if 'goal' in nav_name %}active{% endif %}"><i class="bi bi-bullseye"></i><span>Savings goals</span></a>
+      </nav>
+      <div class="sidebar-user mt-auto">
+        <span class="avatar">{{ user.username|slice:":1"|upper }}</span>
+        <span class="user-meta"><strong>{{ user.username }}</strong><small>{{ user.email|truncatechars:22 }}</small></span>
+        <form action="{% url 'logout' %}" method="post" class="ms-auto">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-icon" title="Sign out" aria-label="Sign out"><i class="bi bi-box-arrow-right"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endwith %}
+{% else %}
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-aside d-none d-md-flex flex-column">
+        <a href="{% url 'login' %}" class="brand brand-light">
+          <span class="brand-mark"><i class="bi bi-leaf"></i></span>
+          <span class="brand-text">FinanceFam</span>
+        </a>
+        <div class="auth-aside-copy">
+          <span class="eyebrow">GROW YOUR GOOD HABITS</span>
+          <h2>Money clarity,<br>without the noise.</h2>
+          <p>Track spending, set gentle budgets and watch your savings goals grow — all in one calm, green space.</p>
+          <ul class="auth-features">
+            <li><i class="bi bi-check2-circle"></i> Simple transaction tracking</li>
+            <li><i class="bi bi-check2-circle"></i> Monthly budgets at a glance</li>
+            <li><i class="bi bi-check2-circle"></i> Goals that keep you motivated</li>
+          </ul>
+        </div>
+        <div class="auth-leaves" aria-hidden="true"><i class="bi bi-leaf"></i><i class="bi bi-leaf"></i><i class="bi bi-leaf"></i></div>
+      </div>
+      <div class="auth-panel">
+        {% if messages %}
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags|alert_class }} soft-alert" role="alert">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+        {% block auth_content %}{% endblock %}
+      </div>
+    </div>
+    <p class="auth-footer">FinanceFam · A demo personal finance app built with Django + Bootstrap 5</p>
+  </div>
+{% endif %}
+
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

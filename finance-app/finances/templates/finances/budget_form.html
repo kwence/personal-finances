@@ -1,0 +1,31 @@
+{% extends "finances/base.html" %}
+{% load form_tags %}
+
+{% block title %}{% if budget %}Edit budget{% else %}New budget{% endif %}{% endblock %}
+{% block page_title %}{% if budget %}Edit budget{% else %}New budget{% endif %}{% endblock %}
+{% block page_subtitle %}Plan what you want to spend, month by month{% endblock %}
+
+{% block page_content %}
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card panel">
+        <div class="panel-head"><div><h2 class="panel-title">Budget details</h2><p class="panel-sub">Amounts in {{ currency }} ({{ currency_symbol }})</p></div></div>
+        <div class="panel-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3"><label class="form-label">Category *</label>{{ form.category|bootstrap_field }}</div>
+            <div class="row">
+              <div class="col-6 mb-3"><label class="form-label">Month *</label>{{ form.month|bootstrap_field }}</div>
+              <div class="col-6 mb-3"><label class="form-label">Year *</label>{{ form.year|bootstrap_field }}</div>
+            </div>
+            <div class="mb-4"><label class="form-label">Monthly limit *</label>{{ form.amount|bootstrap_field }}</div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-green"><i class="bi bi-check2 me-1"></i> Save budget</button>
+              <a href="{% url 'budgets' %}" class="btn btn-light-green">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

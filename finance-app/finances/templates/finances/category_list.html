@@ -1,0 +1,48 @@
+{% extends "finances/base.html" %}
+
+{% block title %}Categories{% endblock %}
+{% block page_title %}Categories{% endblock %}
+{% block page_subtitle %}Organise your money into meaningful groups{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'category_create' %}" class="btn btn-green"><i class="bi bi-plus-lg me-1"></i> New category</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <div class="card panel h-100">
+        <div class="panel-head"><div><h2 class="panel-title">Expense categories</h2><p class="panel-sub">{{ expense_categories|length }} categories</p></div></div>
+        <div class="panel-body category-grid">
+          {% for category in expense_categories %}
+            <div class="category-card">
+              <span class="category-icon" style="--cat-color: {{ category.color }}"><i class="bi {{ category.icon }}"></i></span>
+              <div class="flex-grow-1"><div class="fw-semibold">{{ category.name }}</div><div class="tx-meta">{{ category.transactions.count }} transactions</div></div>
+              <a href="{% url 'category_edit' category.pk %}" class="btn btn-sm btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+              <a href="{% url 'category_delete' category.pk %}" class="btn btn-sm btn-icon text-danger" title="Delete"><i class="bi bi-trash3"></i></a>
+            </div>
+          {% empty %}
+            <div class="empty-compact"><i class="bi bi-tags"></i><p>No expense categories yet.</p></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="card panel h-100">
+        <div class="panel-head"><div><h2 class="panel-title">Income categories</h2><p class="panel-sub">{{ income_categories|length }} categories</p></div></div>
+        <div class="panel-body category-grid">
+          {% for category in income_categories %}
+            <div class="category-card">
+              <span class="category-icon" style="--cat-color: {{ category.color }}"><i class="bi {{ category.icon }}"></i></span>
+              <div class="flex-grow-1"><div class="fw-semibold">{{ category.name }}</div><div class="tx-meta">{{ category.transactions.count }} transactions</div></div>
+              <a href="{% url 'category_edit' category.pk %}" class="btn btn-sm btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+              <a href="{% url 'category_delete' category.pk %}" class="btn btn-sm btn-icon text-danger" title="Delete"><i class="bi bi-trash3"></i></a>
+            </div>
+          {% empty %}
+            <div class="empty-compact"><i class="bi bi-tags"></i><p>No income categories yet.</p></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

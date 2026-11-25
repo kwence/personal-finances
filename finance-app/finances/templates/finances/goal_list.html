@@ -1,0 +1,60 @@
+{% extends "finances/base.html" %}
+{% load form_tags currency_tags %}
+
+{% block title %}Savings goals{% endblock %}
+{% block page_title %}Savings goals{% endblock %}
+{% block page_subtitle %}Every small contribution adds up{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'goal_create' %}" class="btn btn-green"><i class="bi bi-plus-lg me-1"></i> New goal</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="card panel mb-3 goal-overview">
+    <div class="panel-body d-flex flex-wrap align-items-center gap-4">
+      <div class="goal-overview-icon"><i class="bi bi-bullseye"></i></div>
+      <div class="flex-grow-1">
+        <div class="text-muted small">Total saved across all goals</div>
+        <div class="goal-overview-value">{% money total_saved %} <span>/ {% money total_target %}</span></div>
+        <div class="progress mt-2"><div class="progress-bar bg-goal" style="width: {{ overall_progress }}%" role="progressbar" aria-valuenow="{{ overall_progress }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+      </div>
+      <div class="goal-overview-pct">{{ overall_progress }}<small>%</small></div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for goal in goals %}
+      <div class="col-12 col-lg-6">
+        <div class="card panel h-100">
+          <div class="panel-body">
+            <div class="d-flex align-items-start">
+              <div class="flex-grow-1">
+                <h3 class="goal-name">{{ goal.name }}</h3>
+                <div class="text-muted small">{% if goal.due_date %}Target date: {{ goal.due_date|date:"d M Y" }}{% else %}No target date{% endif %}</div>
+              </div>
+              <div class="btn-group">
+                <a href="{% url 'goal_edit' goal.pk %}" class="btn btn-sm btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                <a href="{% url 'goal_delete' goal.pk %}" class="btn btn-sm btn-icon text-danger" title="Delete"><i class="bi bi-trash3"></i></a>
+              </div>
+            </div>
+            <div class="d-flex justify-content-between mt-3 mb-1"><strong>{% money goal.saved_amount %}</strong><span class="text-muted small">of {% money goal.target_amount %}</span></div>
+            <div class="progress"><div class="progress-bar bg-goal" style="width: {{ goal.progress }}%" role="progressbar" aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100">{{ goal.progress }}%</div></div>
+            <div class="goal-foot d-flex justify-content-between align-items-center mt-3">
+              <span class="text-muted small"><i class="bi bi-hourglass-split"></i> {% money goal.remaining %} to go</span>
+              <form method="post" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="goal_id" value="{{ goal.pk }}">
+                <input type="number" name="amount" class="form-control form-control-sm goal-amount" placeholder="0.00" step="0.01" min="0.01" aria-label="Contribution amount" required>
+                <button type="submit" class="btn btn-sm btn-green"><i class="bi bi-plus-lg"></i> Add</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="card panel"><div class="empty-state"><i class="bi bi-bullseye"></i><h3>No goals yet</h3><p>What are you saving for? A trip, a rainy-day fund, something special?</p><a href="{% url 'goal_create' %}" class="btn btn-green">Create your first goal</a></div></div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

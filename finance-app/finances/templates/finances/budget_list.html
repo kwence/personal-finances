@@ -1,0 +1,60 @@
+{% extends "finances/base.html" %}
+{% load currency_tags %}
+
+{% block title %}Budgets{% endblock %}
+{% block page_title %}Monthly budgets{% endblock %}
+{% block page_subtitle %}Set a limit, then see how you're doing{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'budget_create' %}" class="btn btn-green"><i class="bi bi-plus-lg me-1"></i> New budget</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="card panel mb-3">
+    <div class="panel-body d-flex flex-wrap align-items-end gap-3">
+      <div>
+        <label class="form-label small mb-1">Viewing month</label>
+        <select class="form-select" id="budgetMonth" onchange="if(this.value) location.href=this.value">
+          {% for month in months %}
+            <option value="{% url 'budgets' %}?month={{ month|date:'Y-m' }}" {% if month|date:'Y-m' == selected_month|date:'Y-m' %}selected{% endif %}>{{ month|date:'F Y' }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="ms-auto text-muted small"><i class="bi bi-info-circle"></i> Budgets repeat only for the month you choose.</div>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for row in rows %}
+      <div class="col-12 col-lg-6">
+        <div class="card panel budget-card h-100">
+          <div class="panel-body">
+            <div class="d-flex align-items-start gap-3">
+              <span class="category-icon" style="--cat-color: {{ row.budget.category.color }}"><i class="bi {{ row.budget.category.icon }}"></i></span>
+              <div class="flex-grow-1">
+                <h3 class="budget-name">{{ row.budget.category.name }}</h3>
+                <div class="text-muted small">{{ selected_month|date:'F Y' }}</div>
+              </div>
+              <div class="btn-group">
+                <a href="{% url 'budget_edit' row.budget.pk %}" class="btn btn-sm btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                <a href="{% url 'budget_delete' row.budget.pk %}" class="btn btn-sm btn-icon text-danger" title="Delete"><i class="bi bi-trash3"></i></a>
+              </div>
+            </div>
+            <div class="budget-amounts">
+              <div><span class="text-muted small">Spent</span><strong>{% money row.spent %}</strong></div>
+              <div class="text-end"><span class="text-muted small">Limit</span><strong>{% money row.budget.amount %}</strong></div>
+            </div>
+            <div class="progress"><div class="progress-bar {% if row.over %}bg-danger{% endif %}" role="progressbar" style="width: {{ row.percent }}%" aria-valuenow="{{ row.percent }}" aria-valuemin="0" aria-valuemax="100">{{ row.percent }}%</div></div>
+            <div class="budget-foot {% if row.over %}over{% endif %}">
+              {% if row.over %}<i class="bi bi-exclamation-triangle"></i> Over limit · {% money row.spent %} spent{% else %}<i class="bi bi-check2-circle"></i> {% money row.remaining %} remaining{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="card panel"><div class="empty-state"><i class="bi bi-pie-chart"></i><h3>No budgets for {{ selected_month|date:'F Y' }}</h3><p>Create a budget to keep an eye on your spending.</p><a href="{% url 'budget_create' %}" class="btn btn-green">Create a budget</a></div></div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

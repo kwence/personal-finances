@@ -1,0 +1,168 @@
+{% extends "finances/base.html" %}
+{% load currency_tags %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Good to see you, {{ user.username }} 👋{% endblock %}
+{% block page_subtitle %}{{ today|date:"l, d F Y" }} · Here's how your money is doing{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'transaction_create' %}?type=expense" class="btn btn-green"><i class="bi bi-plus-lg me-1"></i> Add transaction</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="row g-3 g-xl-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-balance">
+        <div class="stat-top"><span class="stat-icon"><i class="bi bi-wallet2"></i></span><span class="stat-trend"><i class="bi bi-arrow-up-right"></i> all time</span></div>
+        <div class="stat-label">Net balance</div>
+        <div class="stat-value">{% money balance %}</div>
+        <div class="stat-foot">Income {% money all_income %} · Expenses {% money all_expense %}</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-income">
+        <div class="stat-top"><span class="stat-icon"><i class="bi bi-arrow-down-left"></i></span><span class="stat-trend">this month</span></div>
+        <div class="stat-label">Income</div>
+        <div class="stat-value">{% money income %}</div>
+        <div class="stat-foot">Money that came in</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-expense">
+        <div class="stat-top"><span class="stat-icon"><i class="bi bi-arrow-up-right"></i></span><span class="stat-trend">this month</span></div>
+        <div class="stat-label">Expenses</div>
+        <div class="stat-value">{% money expense %}</div>
+        <div class="stat-foot">Money that went out</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-saving">
+        <div class="stat-top"><span class="stat-icon"><i class="bi bi-piggy-bank"></i></span><span class="stat-trend">this month</span></div>
+        <div class="stat-label">Savings rate</div>
+        <div class="stat-value">{{ savings_rate }}<small>%</small></div>
+        <div class="stat-foot">{% money month_balance %} left after expenses</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 g-xl-4 mt-1">
+    <div class="col-12 col-xl-7">
+      <div class="card panel h-100">
+        <div class="panel-head">
+          <div><h2 class="panel-title">Income vs expenses</h2><p class="panel-sub">Last 6 months</p></div>
+          <div class="chart-legend"><span><i class="dot dot-income"></i>Income</span><span><i class="dot dot-expense"></i>Expenses</span></div>
+        </div>
+        <div class="panel-body">
+          <div class="bar-chart">
+            {% for item in months %}
+              <div class="bar-group">
+                <div class="bars">
+                  <div class="bar bar-income" style="height: {% widthratio item.income chart_max 100 %}%" title="Income {{ item.label }}: {% money item.income %}"></div>
+                  <div class="bar bar-expense" style="height: {% widthratio item.expense chart_max 100 %}%" title="Expenses {{ item.label }}: {% money item.expense %}"></div>
+                </div>
+                <span class="bar-label">{{ item.label }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-xl-5">
+      <div class="card panel h-100">
+        <div class="panel-head"><div><h2 class="panel-title">Where it went</h2><p class="panel-sub">Expenses this month</p></div></div>
+        <div class="panel-body">
+          {% if segments %}
+            <div class="donut-wrap">
+              <div class="donut" style="background: {{ donut_css }};">
+                <div class="donut-hole"><span>Total spent</span><strong>{% money expense %}</strong></div>
+              </div>
+              <div class="donut-legend">
+                {% for segment in segments %}
+                  <div class="legend-row">
+                    <span class="legend-dot" style="background: {{ segment.color }}"></span>
+                    <span class="legend-name">{{ segment.name }}</span>
+                    <span class="legend-value">{{ segment.percent|floatformat:0 }}%</span>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            <div class="empty-compact"><i class="bi bi-pie-chart"></i><p>No expenses logged this month yet.</p><a href="{% url 'transaction_create' %}">Add your first expense →</a></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-3 g-xl-4 mt-1">
+    <div class="col-12 col-xl-7">
+      <div class="card panel h-100">
+        <div class="panel-head">
+          <div><h2 class="panel-title">Recent transactions</h2><p class="panel-sub">Your latest money moves</p></div>
+          <a href="{% url 'transactions' %}" class="panel-link">View all <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="table-responsive">
+          {% if recent_transactions %}
+            <table class="table align-middle mb-0">
+              <thead><tr><th>Description</th><th>Date</th><th class="text-end">Amount</th></tr></thead>
+              <tbody>
+                {% for item in recent_transactions %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="tx-icon" style="--tx-color: {{ item.category.color }}"><i class="bi {{ item.category.icon }}"></i></span>
+                        <div><div class="tx-name">{{ item.description }}</div><div class="tx-meta">{{ item.category.name }}</div></div>
+                      </div>
+                    </td>
+                    <td class="text-muted small">{{ item.date|date:"d M" }}</td>
+                    <td class="text-end fw-semibold {% if item.is_income %}amount-income{% else %}amount-expense{% endif %}">
+                      {% if item.is_income %}+{% else %}−{% endif %}{% money item.amount %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <div class="empty-compact"><i class="bi bi-receipt"></i><p>No transactions yet. Start by adding one.</p><a href="{% url 'transaction_create' %}">Add a transaction →</a></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-xl-5">
+      <div class="card panel mb-3">
+        <div class="panel-head">
+          <div><h2 class="panel-title">Monthly budgets</h2><p class="panel-sub">{{ today|date:"F Y" }}</p></div>
+          <a href="{% url 'budgets' %}" class="panel-link">Manage <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="panel-body">
+          {% for row in budget_rows %}
+            <div class="budget-mini">
+              <div class="d-flex justify-content-between"><span><i class="bi {{ row.budget.category.icon }}" style="color: {{ row.budget.category.color }}"></i> {{ row.budget.category.name }}</span><strong class="small">{% money row.spent %} / {% money row.budget.amount %}</strong></div>
+              <div class="progress thin"><div class="progress-bar {% if row.over %}bg-danger{% endif %}" role="progressbar" style="width: {{ row.percent }}%" aria-valuenow="{{ row.percent }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+            </div>
+          {% empty %}
+            <div class="empty-compact small"><i class="bi bi-pie-chart"></i><p>No budgets for this month.</p><a href="{% url 'budget_create' %}">Create a budget →</a></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head">
+          <div><h2 class="panel-title">Savings goals</h2><p class="panel-sub">Keep the momentum going</p></div>
+          <a href="{% url 'goals' %}" class="panel-link">All goals <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="panel-body">
+          {% for goal in goals %}
+            <div class="goal-mini">
+              <div class="d-flex justify-content-between"><span><i class="bi bi-bullseye"></i> {{ goal.name }}</span><strong class="small">{{ goal.progress }}%</strong></div>
+              <div class="progress thin"><div class="progress-bar bg-goal" role="progressbar" style="width: {{ goal.progress }}%" aria-valuenow="{{ goal.progress }}" aria-valuemin="0" aria-valuemax="100"></div></div>
+            </div>
+          {% empty %}
+            <div class="empty-compact small"><i class="bi bi-bullseye"></i><p>Dreaming of something? Track it here.</p><a href="{% url 'goal_create' %}">Add a goal →</a></div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

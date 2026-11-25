@@ -1,0 +1,31 @@
+{% extends "finances/base.html" %}
+{% load form_tags %}
+
+{% block title %}{% if goal %}Edit goal{% else %}New goal{% endif %}{% endblock %}
+{% block page_title %}{% if goal %}Edit goal{% else %}New goal{% endif %}{% endblock %}
+{% block page_subtitle %}Give your savings a destination{% endblock %}
+
+{% block page_content %}
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card panel">
+        <div class="panel-head"><div><h2 class="panel-title">Goal details</h2><p class="panel-sub">Amounts in {{ currency }} ({{ currency_symbol }})</p></div></div>
+        <div class="panel-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3"><label class="form-label">Goal name *</label>{{ form.name|bootstrap_field }}</div>
+            <div class="row">
+              <div class="col-md-6 mb-3"><label class="form-label">Target amount *</label>{{ form.target_amount|bootstrap_field }}</div>
+              <div class="col-md-6 mb-3"><label class="form-label">Already saved</label>{{ form.saved_amount|bootstrap_field }}</div>
+            </div>
+            <div class="mb-4"><label class="form-label">Target date (optional)</label>{{ form.due_date|bootstrap_field }}</div>
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-green"><i class="bi bi-check2 me-1"></i> Save goal</button>
+              <a href="{% url 'goals' %}" class="btn btn-light-green">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

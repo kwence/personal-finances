@@ -1,0 +1,25 @@
+{% extends "finances/base.html" %}
+{% load currency_tags %}
+
+{% block title %}Delete goal{% endblock %}
+{% block page_title %}Delete goal{% endblock %}
+{% block page_subtitle %}This can't be undone{% endblock %}
+
+{% block page_content %}
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="card panel confirm-card">
+        <div class="panel-body text-center">
+          <div class="confirm-icon"><i class="bi bi-trash3"></i></div>
+          <h2 class="confirm-title">Delete {{ goal.name }}?</h2>
+          <p class="confirm-text">{% money goal.saved_amount %} saved out of {% money goal.target_amount %} will be removed from your goals.</p>
+          <form method="post" class="d-flex justify-content-center gap-2">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash3 me-1"></i> Yes, delete</button>
+            <a href="{% url 'goals' %}" class="btn btn-light-green">Keep it</a>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

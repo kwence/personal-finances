@@ -1,0 +1,66 @@
+{% extends "finances/base.html" %}
+{% load static form_tags %}
+
+{% block title %}{% if transaction %}Edit transaction{% else %}New transaction{% endif %}{% endblock %}
+{% block page_title %}{% if transaction %}Edit transaction{% else %}Add a transaction{% endif %}{% endblock %}
+{% block page_subtitle %}{% if transaction %}Update the details below{% else %}Record money coming in or going out{% endif %}{% endblock %}
+
+{% block page_content %}
+  {{ category_kinds|json_script:"category-kinds" }}
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xl-7">
+      <div class="card panel">
+        <div class="panel-head"><div><h2 class="panel-title">Transaction details</h2><p class="panel-sub">Amounts in {{ currency }} ({{ currency_symbol }}) · fields marked * are required</p></div></div>
+        <div class="panel-body">
+          <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-4">
+              <label class="form-label">{{ form.kind.label }}</label>
+              <div class="type-switch">
+                <div class="form-check"><label class="type-option expense-option">{{ form.kind.0 }}<span><i class="bi bi-arrow-up-right-circle"></i> Expense</span></label></div>
+                <div class="form-check"><label class="type-option income-option">{{ form.kind.1 }}<span><i class="bi bi-arrow-down-left-circle"></i> Income</span></label></div>
+              </div>
+              {% for error in form.kind.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
+                {{ form.category|bootstrap_field }}
+                <div class="form-text">Need a new one? <a href="{% url 'category_create' %}">Create a category</a></div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.amount.id_for_label }}" class="form-label">Amount *</label>
+                <div class="input-group">
+                  <span class="input-group-text">{{ currency_symbol }}</span>
+                  {{ form.amount|bootstrap_field }}
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.date.id_for_label }}" class="form-label">Date *</label>
+                {{ form.date|bootstrap_field }}
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                {{ form.description|bootstrap_field }}
+              </div>
+            </div>
+            <div class="mb-4">
+              <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+              {{ form.notes|bootstrap_field }}
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-green"><i class="bi bi-check2 me-1"></i> {% if transaction %}Save changes{% else %}Add transaction{% endif %}</button>
+              <a href="{% url 'transactions' %}" class="btn btn-light-green">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_scripts %}<script src="{% static 'app/js/transactions.js' %}"></script>{% endblock %}
